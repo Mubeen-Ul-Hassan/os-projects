@@ -6,6 +6,7 @@
 #include <stdlib.h> // exit()
 #include <sys/wait.h>
 #include <stdbool.h> // defines true and false
+#include <fcntl.h>   // for open() and close()
 
 char **input_token(char *input)
 {
@@ -30,36 +31,33 @@ int main()
 {
     char string[100];
 
-    printf("Enter the string: ");
-    fgets(string, sizeof(string), stdin);
-
-    char **input = input_token(string);
-
-    /*
-    -- Print the tokens --
-    printf("Tokens are: \n");
-    for (int i = 0; input[i] != NULL; i++)
+    while (1)
     {
-        printf("%s", input[i]);
-        printf(" ");
-    }
-    */
-    // Fork()
+        printf("myshell> ");
+        fgets(string, sizeof(string), stdin);
 
-    pid_t pid = fork(); // Create a child process
+        char **input = input_token(string);
 
-    if (pid == 0) // Child process
-    {
-        execvp(input[0], input);
-        printf("Child PID: %d\n", getpid());
-        _exit(0);
-    }
-    else
-    {
-        wait(NULL); // wait for child to exit
+        /*
+        - open()  and dup2() will be implemented in if-else block
+        */
+
+        pid_t pid = fork(); // Create a child process
+        if (pid == 0)       // Child process
+        {
+            execvp(input[0], input);
+            printf("Child PID: %d\n", getpid());
+            _exit(0);
+        }
+        else
+        {
+            wait(NULL); // wait for child to exit
+        }
+
+        printf("\n");
+        free(input); // Release dynamically allocate memory
     }
 
-    free(input); // Release dynamically allocate memory
     return 0;
 }
 
