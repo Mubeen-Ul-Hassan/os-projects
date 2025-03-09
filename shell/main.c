@@ -2,40 +2,64 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
+#include <unistd.h> // for fork() and getpid()
 #include <stdlib.h> // exit()
+#include <sys/wait.h>
+#include <stdbool.h> // defines true and false
+
+char **input_token(char *input)
+{
+    char **tokens = (char **)malloc(20 * sizeof(char *));
+    char *token;
+
+    token = strtok(input, " \n");
+    int index = 0;
+
+    while (token != NULL)
+    {
+        tokens[index] = (token);
+        token = strtok(NULL, " \n");
+        index++;
+    }
+
+    tokens[index] = NULL;
+    return tokens;
+}
 
 int main()
 {
-    char string[20];
+    char string[100];
 
     printf("Enter the string: ");
-    fgets(string, 20, stdin);
-    printf("\nThe string is: %s", string);
+    fgets(string, sizeof(string), stdin);
 
-    char *token;
-    char delimiter[] = " ";
+    char **input = input_token(string);
 
-    token = strtok(string, delimiter);
-
-    while (token)
+    /*
+    -- Print the tokens --
+    printf("Tokens are: \n");
+    for (int i = 0; input[i] != NULL; i++)
     {
-        printf("%s\n", token);
-        token = strtok(NULL, delimiter); // "Null" to resume tokenizing from the previously saved the position.
+        printf("%s", input[i]);
+        printf(" ");
+    }
+    */
+    // Fork()
+
+    pid_t pid = fork(); // Create a child process
+
+    if (pid == 0) // Child process
+    {
+        execvp(input[0], input);
+        printf("Child PID: %d\n", getpid());
+        _exit(0);
+    }
+    else
+    {
+        wait(NULL); // wait for child to exit
     }
 
-    // Fork start
-    int pid;
-    pid = fork();
-
-    if (pid == 0)
-    {
-        printf("I am the child process\n");
-    }
-
-    printf("Process ID: %d\n", getpid());
-    // Fork end
-
+    free(input); // Release dynamically allocate memory
     return 0;
 }
 
