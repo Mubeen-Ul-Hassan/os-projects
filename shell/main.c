@@ -1,73 +1,58 @@
 #include <stdio.h>
-#include <string.h>
-#include <unistd.h> // for fork() and getpid()
-#include <stdlib.h> // exit()
+#include <stdlib.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <sys/wait.h>
-#include <stdbool.h> // defines true and false
-#include <fcntl.h>   // for open() and close()
+#include <string.h>
+#include <stdbool.h>
 
-char **input_token(char *input)
+int main(void)
 {
-    char **tokens = (char **)malloc(20 * sizeof(char *));
-    char *token;
 
-    token = strtok(input, " \n");
-    int index = 0;
-
-    while (token != NULL)
+    bool running = true;
+    while (running)
     {
-        tokens[index] = (token);
-        token = strtok(NULL, " \n");
-        index++;
-    }
+        char args[50];
+        char *words[10];
 
-    tokens[index] = NULL;
-    return tokens;
-}
+        printf("myshell > ");
+        fgets(args, sizeof(args), stdin);
 
-int main()
-{
-    char string[100];
+        // Remove trailing newline character
+        args[strcspn(args, "\n")] = 0;
 
-    while (1)
-    {
-        printf("myshell> ");
-        fgets(string, sizeof(string), stdin);
+        // Split string by spaces
+        char *token = strtok(args, " ");
 
-        char **input = input_token(string);
-
-        /*
-        - open()  and dup2() will be implemented in if-else block
-        */
-
-        pid_t pid = fork(); // Create a child process
-        if (pid == 0)       // Child process
-        {
-            execvp(input[0], input);
-            printf("Child PID: %d\n", getpid());
-            _exit(0);
+        char index = 0;
+        while (token != NULL) {
+            words[index++] = token;
+            token = strtok(NULL, " ");
         }
-        else
-        {
-            wait(NULL); // wait for child to exit
+        words[index] = NULL;
+
+        // Check for exit command
+        if (strcmp(words[0], "exit") == 0) {
+            running = false;
+            break;
         }
 
-        printf("\n");
-        free(input); // Release dynamically allocate memory
+        pid_t pid = fork();
+
+        if (pid < 0) {
+            perror("fork");
+            exit(EXIT_FAILURE);
+        }
+        else if (pid == 0) {
+            execvp(words[0], words);
+            perror("Error: ");
+            exit(EXIT_FAILURE);
+        }
+        else {
+            int status;
+            waitpid(pid, &status, 0);
+        }
     }
 
     return 0;
 }
-
-/*
-        strtok(arg1, arg2)
-        arg1 - original string to be passed.
-        arg2 - seprator using which we tokenize the string.
-*/
-
-/*
-        fgets(argument1, argument2, argument3);
-        arg1 - name of the array which will store the value
-        arg2 - size of the input you want to take
-        arg3 - source of the input
-*/
