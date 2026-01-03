@@ -128,9 +128,3 @@ int main(void)
 
     return 0;
 }
-
-/*
-For piping we create two child process using for and pipe() system call provides two
-file descriptor fd[0] for reading and fd[1] for writing. This how we piped output of
-one process into the input of another process.
-*/
