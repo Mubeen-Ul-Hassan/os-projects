@@ -8,8 +8,12 @@ A process becomes an orphan if is parent exits while the child is still running.
 - After orphaned, getppid() in the child will show 1 (PID of init/systemd).
 
 ## How to identify them
-Compile and run program
+Compile and run program.
+<br>
 `gcc orphan.c -o orphan.out && ./orphan.out`
-After this run this command and watch
+<br>
+After this run this command and watch.
+<br>
 `ps -o pid,ppid,cmd`
+<br>
 You will see the child's PPID change to 1 once the parent exits.
