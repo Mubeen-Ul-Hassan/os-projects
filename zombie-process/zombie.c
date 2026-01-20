@@ -18,8 +18,10 @@ int main(int argc, char *argv[]) {
         printf("Child: Work finished!\n");
         exit(EXIT_SUCCESS);
     } else {
+        // int status;
         printf("Parent: Waiting for child to finish...\n");
-        wait(NULL);
+        // wait(&status);
+        sleep(10); // Parent sleeps so child can become zombie.
         printf("Parent: Child is done, now I can finish too. \n");
     }
 
