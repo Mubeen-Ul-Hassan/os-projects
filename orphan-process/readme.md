@@ -9,7 +9,11 @@ A process becomes an orphan if is parent exits while the child is still running.
 
 ## How to identify them
 Compile and run program:
+<br>
 `gcc orphan.c -o orphan.out && ./orphan.out`
+<br>
 While the child process is still running, check its PID and PPID:
+<br>
 `ps -o pid,ppid,cmd -p <child_pid>`
+<br>
 Initially, its PPID is the PID of its parent process. After the parent exits, the child becomes **orphan**. The PPID will change to the PID of the adopting process (usually `systemmd` or your shell), which may or may not be 1. Orphan processes are often adopted by a subreaper.
