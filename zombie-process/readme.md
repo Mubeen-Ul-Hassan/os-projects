@@ -9,6 +9,7 @@ A process that has completed it's execution but still has an entry in the system
 ## How to Identify them
 Use the `ps` command in terminal and look for status `Z` status or word `<defunct>`
 <br>
-```ps aux | grep 'Z'
-<br>
-ps aux | grep '<defunct>'```
+
+```
+ps aux | grep -E 'Z|<defuct>'
+```
