@@ -1,7 +1,5 @@
 import socket
-import datetime
 import random
-import sys
 
 HOST = 'localhost'
 PORT = 6041
