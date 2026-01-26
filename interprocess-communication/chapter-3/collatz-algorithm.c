@@ -6,6 +6,12 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <limits.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+
+#define SHM_NAME "/sequence_shm"
+#define CHUNK_SIZE 4096
 
 int integer(char *num);
 void print_sequence(int *arr, int arr_size);
@@ -19,10 +25,10 @@ int main(int argc, char *argv[])
         printf("ERROR: PositiveIntegerOnly\n");
         exit(EXIT_FAILURE);
     }
-    printf("Number: %d\n", number);
+    printf("-- Number: %d\n", number);
 
     pid_t child_pid = fork();
-    
+
     if (child_pid < 0)
     {
         perror("Fork Failed");
@@ -31,8 +37,16 @@ int main(int argc, char *argv[])
 
     if (child_pid == 0)
     {
-        int sequence_arr[number + 1];
-        sequence_arr[0] = number;
+        int fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
+        ftruncate(fd, CHUNK_SIZE);
+        char *write_ptr = mmap(NULL, CHUNK_SIZE, PROT_WRITE, MAP_SHARED, fd, 0);
+
+        if (write_ptr == MAP_FAILED)
+        {
+            perror("mmap failed\n");
+            close(fd);
+            exit(EXIT_FAILURE);
+        }
         
         int index = 1;
         int n = number;
@@ -44,14 +58,28 @@ int main(int argc, char *argv[])
             } else {
                 n = (3 * n) + 1;
             }
-            sequence_arr[index] = n;
-            index++;
+            write_ptr += sprintf(write_ptr, "%d ", n);
         }
-        print_sequence(sequence_arr, index);
+        printf("-- Child process have computed the sequence.\n");
+        close(fd);
+        exit(EXIT_SUCCESS);
     } else
     {
         wait(NULL);
+        int fd = shm_open(SHM_NAME, O_RDONLY, 0666);
+        char *read_ptr = mmap(NULL, CHUNK_SIZE, PROT_READ, MAP_SHARED, fd, 0);
+
+        if (read_ptr == MAP_FAILED)
+        {
+            perror("mmap failed\n");
+            close(fd);
+            exit(EXIT_FAILURE);
+        }
+        printf("-- Parent process reading the sequence.\n");
+        printf("-- Sequence: %s\n", (char *)read_ptr);
+        close(fd);
     }
+    shm_unlink(SHM_NAME);
 
     return 0;
 }
@@ -75,13 +103,4 @@ int integer(char *num)
     }
 
     return (int) number;
-}
-
-void print_sequence(int *arr, int arr_size)
-{
-    for (int i = 0; i < arr_size; i++)
-    {
-        printf("%d ", arr[i]);
-    }
-    printf("\n");
 }
