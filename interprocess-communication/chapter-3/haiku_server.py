@@ -43,3 +43,6 @@ try:
 except socket.error as e:
     print(f"Error: {e}")
         
+
+# Use this command to hit server
+# ncat 127.0.0.1 PORT
