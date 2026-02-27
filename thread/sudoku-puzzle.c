@@ -3,7 +3,7 @@
 #include <string.h>
 
 int* read_from_file(char *filename);
-void populate_sudoku_board(int input_array, int target_array);
+void populate_sudoku_board(int *input_array, int target_array[9][9]);
 
 int sudoku[9][9]; // sudoku board
 
@@ -25,14 +25,29 @@ int main(int argc, char *argv[])
 
     char *file_path = "./puzzle.txt";
     int *numbers = read_from_file(file_path); 
+    populate_sudoku_board(numbers, sudoku);
 
-    for (int i = 0; i < 81; i++)
+    for (int i = 0; i < 9; i++)
     {
-        printf("%d ", numbers[i]);
+        printf("%d ", sudoku[0][i]);
     }
+    printf("\n");
 
     free(numbers);
     return 0;
+}
+
+void populate_sudoku_board(int *input_array, int target_array[9][9])
+{
+    int index = 0;
+
+    for (int row = 0; row < 9; row++)
+    {
+        for (int column = 0; column < 9; column++)
+        {
+            target_array[row][column] = input_array[index++];
+        }
+    }
 }
 
 int* read_from_file(char *file_path)
